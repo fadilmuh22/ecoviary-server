@@ -35,8 +35,10 @@ const createAutomationSchedule = (key: string, automation: Automations) => {
 
   jobs[key] = jobs[key] || {};
 
-  const startJob = schedule(automationCron, () => {
-    try {
+  let startJob;
+
+  try {
+    startJob = schedule(automationCron, () => {
       createControlsSchedule(key, automation);
 
       update(automationsRef(), {
@@ -44,10 +46,10 @@ const createAutomationSchedule = (key: string, automation: Automations) => {
       });
 
       console.log(`[${new Date()}][jobs]: started on ${new Date()}`, jobs);
-    } catch (error) {
-      console.log(`[${new Date()}][jobs]: errored`, error);
-    }
-  });
+    });
+  } catch (error) {
+    console.log(`[${new Date()}][jobs]: errored`, error, jobs[key]);
+  }
 
   jobs[key] = { ...jobs[key], start: startJob };
 
@@ -81,6 +83,8 @@ export const watchAutomations = () => {
 
     automationKeys.forEach((key) => {
       const automation = automationList[key];
+
+      if (automation.activated === false) return;
 
       switch (automation.status) {
         case AutomationStatus.default:

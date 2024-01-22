@@ -16,11 +16,12 @@ export enum AutomationStatus {
 }
 
 export type Automations = {
-  food: number[];
-  water: number[];
+  food: string[];
+  water: string[];
   disinfectant: boolean[];
   date: number;
   status: AutomationStatus;
+  activated: boolean;
 };
 
 export type AutomationJobs = {

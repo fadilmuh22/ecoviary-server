@@ -8,8 +8,8 @@ export const dateToCron = (date: Date): string => {
   return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
 };
 
-export const hourListToCron = (hourList: number[]): string => {
-  const hours = hourList.map((hour) => `${hour} *`).join(",");
+export const hourListToCron = (hourList: string[]): string => {
+  const hours = hourList.map((hour) => `${hour.substring(0, 2)} *`).join(",");
   return `0 ${hours} * * *`;
 };
 
