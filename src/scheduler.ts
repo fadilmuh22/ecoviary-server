@@ -4,9 +4,9 @@ import { onValue, update } from "firebase/database";
 import { dateToCron, hourListToCron, dayListToCron } from "./utils";
 import { AutomationJobs, Automations, AutomationStatus } from "./types";
 
-const jobs: AutomationJobs = {};
+let jobs: AutomationJobs = {};
 
-const createControlsSchedule = (key: string, automation: Automations) => {
+const createControlsSchedule = (automation: Automations) => {
   const food = schedule(hourListToCron(automation.food), () => {
     update(controlsRef(), {
       food: true,
@@ -22,24 +22,22 @@ const createControlsSchedule = (key: string, automation: Automations) => {
       disinfectant: true,
     });
   });
-  jobs[key] = {
-    ...jobs[key],
+  jobs = {
+    ...jobs,
     food,
     water,
     disinfectant,
   };
 };
 
-const createAutomationSchedule = (key: string, automation: Automations) => {
+const createAutomationSchedule = (automation: Automations) => {
   const automationCron = dateToCron(new Date(automation.date));
-
-  jobs[key] = jobs[key] || {};
 
   let startJob;
 
   try {
     startJob = schedule(automationCron, () => {
-      createControlsSchedule(key, automation);
+      createControlsSchedule(automation);
 
       update(automationsRef(), {
         status: AutomationStatus.started,
@@ -48,10 +46,10 @@ const createAutomationSchedule = (key: string, automation: Automations) => {
       console.log(`[${new Date()}][jobs]: started on ${new Date()}`, jobs);
     });
   } catch (error) {
-    console.log(`[${new Date()}][jobs]: errored`, error, jobs[key]);
+    console.log(`[${new Date()}][jobs]: errored`, error, jobs);
   }
 
-  jobs[key] = { ...jobs[key], start: startJob };
+  jobs = { ...jobs, start: startJob };
 
   update(automationsRef(), {
     status: AutomationStatus.scheduled,
@@ -67,43 +65,36 @@ const createAutomationSchedule = (key: string, automation: Automations) => {
 
 export const watchAutomations = () => {
   const automationValues = onValue(automationsRef(), (snapshot) => {
-    const automationList: Record<string, Automations> = snapshot.val();
-    const automationKeys = Object.keys(automationList);
+    const automation: Automations = snapshot.val();
+    console.log(`[${new Date()}][jobs]: automation`, automation);
 
-    // clear jobs that are not in the database
-    Object.keys(jobs).forEach((key) => {
-      if (!automationKeys.includes(key) && jobs[key]) {
-        jobs[key].start?.stop();
-        jobs[key].food?.stop();
-        jobs[key].water?.stop();
-        jobs[key].disinfectant?.stop();
-        delete jobs[key];
-      }
-    });
+    if (jobs.date && jobs.date !== automation.date) {
+      jobs.start?.stop();
+      jobs.food?.stop();
+      jobs.water?.stop();
+      jobs.disinfectant?.stop();
+      jobs = {};
+    }
 
-    automationKeys.forEach((key) => {
-      const automation = automationList[key];
+    if (automation.activated === false) return;
 
-      if (automation.activated === false) return;
-
-      switch (automation.status) {
-        case AutomationStatus.default:
-          createAutomationSchedule(key, automation);
-          break;
-        case AutomationStatus.scheduled:
-          if (!jobs[key] || !jobs[key].start) {
-            createAutomationSchedule(key, automation);
-          }
-          break;
-        case AutomationStatus.started:
-          if (!jobs[key]) {
-            createControlsSchedule(key, automation);
-          }
-          break;
-        default:
-          break;
-      }
-    });
+    switch (automation.status) {
+      case AutomationStatus.default:
+        createAutomationSchedule(automation);
+        break;
+      case AutomationStatus.scheduled:
+        if (!jobs || !jobs.start) {
+          createAutomationSchedule(automation);
+        }
+        break;
+      case AutomationStatus.started:
+        if (!jobs) {
+          createControlsSchedule(automation);
+        }
+        break;
+      default:
+        break;
+    }
   });
 
   return automationValues;

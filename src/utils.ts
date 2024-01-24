@@ -18,5 +18,5 @@ export const dayListToCron = (dayList: boolean[]): string => {
     .map((day, index) => (day ? index + 1 : 0))
     .filter((val) => val === 0)
     .join(",");
-  return `0 7 * * ${days}`;
+  return `0 12 * * ${days}`;
 };

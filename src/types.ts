@@ -25,11 +25,9 @@ export type Automations = {
 };
 
 export type AutomationJobs = {
-  [key: string]: {
-    start?: ScheduledTask;
-    food?: ScheduledTask;
-    water?: ScheduledTask;
-    disinfectant?: ScheduledTask;
-    date?: number;
-  };
+  start?: ScheduledTask;
+  food?: ScheduledTask;
+  water?: ScheduledTask;
+  disinfectant?: ScheduledTask;
+  date?: number;
 };
