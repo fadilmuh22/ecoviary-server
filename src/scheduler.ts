@@ -98,15 +98,13 @@ export const watchAutomations = () => {
 
     switch (automation.status) {
       case AutomationStatus.default:
-        createAutomationSchedule(automation);
-        break;
       case AutomationStatus.scheduled:
-        if (!jobs || !jobs.start) {
-          createAutomationSchedule(automation);
-        }
+        createAutomationSchedule(automation);
         break;
       case AutomationStatus.started:
         if (!jobs) {
+          jobs = {};
+          jobs.date = automation.date;
           createControlsSchedule(automation);
         }
         break;

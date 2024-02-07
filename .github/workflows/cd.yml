@@ -95,7 +95,7 @@ jobs:
             yarn install
             npx prisma generate
             yarn build
-            pm2 delete boardbyte >> /dev/null || true && pm2 start dist/index.js --name boardbyte
+            pm2 delete ${{ matrix.server.name }} >> /dev/null || true && pm2 start dist/index.js --name ${{ matrix.server.name }}
 
   clean-up:
     name: "${{ matrix.server.name }}: Clean up"

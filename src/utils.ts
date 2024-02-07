@@ -1,6 +1,6 @@
 export const dateToCron = (date: Date): string => {
-  const minutes = date.getMinutes();
-  const hours = date.getHours();
+  const minutes = new Date().getMinutes() + 1;
+  const hours = new Date().getHours();
   const days = date.getDate();
   const months = date.getMonth() + 1;
   const dayOfWeek = date.getDay();
