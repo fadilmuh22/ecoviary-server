@@ -1,0 +1,9 @@
+[
+  {
+    "name": "ecoviary-server-0",
+    "host": "157.245.154.98",
+    "username": "root",
+    "port": "22",
+    "path": "/var/www/html/ecoviary-server"
+  }
+]

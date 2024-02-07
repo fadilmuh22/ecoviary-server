@@ -11,16 +11,34 @@ const createControlsSchedule = (automation: Automations) => {
     update(controlsRef(), {
       food: true,
     });
+
+    setTimeout(() => {
+      update(controlsRef(), {
+        food: false,
+      });
+    }, 30 * 1000);
   });
   const water = schedule(hourListToCron(automation.water), () => {
     update(controlsRef(), {
       water: true,
     });
+
+    setTimeout(() => {
+      update(controlsRef(), {
+        water: false,
+      });
+    }, 30 * 1000);
   });
   const disinfectant = schedule(dayListToCron(automation.disinfectant), () => {
     update(controlsRef(), {
       disinfectant: true,
     });
+
+    setTimeout(() => {
+      update(controlsRef(), {
+        disinfectant: false,
+      });
+    }, 30 * 1000);
   });
   jobs = {
     ...jobs,
