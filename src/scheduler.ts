@@ -7,32 +7,55 @@ import { AutomationJobs, Automations, AutomationStatus } from "./types";
 let jobs: AutomationJobs = {};
 
 const createControlsSchedule = (automation: Automations) => {
-  const food = schedule(hourListToCron(automation.food), () => {
-    update(controlsRef(), {
-      food: true,
-    });
-
-    setTimeout(() => {
+  const food = automation.food.map((foodHour) =>
+    schedule(hourListToCron(foodHour), () => {
       update(controlsRef(), {
-        food: false,
+        food: true,
       });
-    }, 30 * 1000);
-  });
-  const water = schedule(hourListToCron(automation.water), () => {
-    update(controlsRef(), {
-      water: true,
-    });
 
-    setTimeout(() => {
+      console.log(
+        `[${new Date()}][jobs]: food started cron(${hourListToCron(foodHour)})`,
+        jobs
+      );
+
+      setTimeout(() => {
+        update(controlsRef(), {
+          food: false,
+        });
+      }, 30 * 1000);
+    })
+  );
+  const water = automation.water.map((waterHour) =>
+    schedule(hourListToCron(waterHour), () => {
       update(controlsRef(), {
-        water: false,
+        water: true,
       });
-    }, 30 * 1000);
-  });
+
+      console.log(
+        `[${new Date()}][jobs]: water started cron(${hourListToCron(
+          waterHour
+        )})`,
+        jobs
+      );
+
+      setTimeout(() => {
+        update(controlsRef(), {
+          water: false,
+        });
+      }, 30 * 1000);
+    })
+  );
   const disinfectant = schedule(dayListToCron(automation.disinfectant), () => {
     update(controlsRef(), {
       disinfectant: true,
     });
+
+    console.log(
+      `[${new Date()}][jobs]: disinfectant started cron(${dayListToCron(
+        automation.disinfectant
+      )})`,
+      jobs
+    );
 
     setTimeout(() => {
       update(controlsRef(), {
@@ -49,7 +72,12 @@ const createControlsSchedule = (automation: Automations) => {
 };
 
 const createAutomationSchedule = (automation: Automations) => {
-  const automationCron = dateToCron(new Date(automation.date));
+  const automationDate = new Date(0);
+  automationDate.setMilliseconds(automation.date);
+  automationDate.setMinutes(new Date().getMinutes() + 1);
+  automationDate.setHours(new Date().getHours());
+
+  const automationCron = dateToCron(automationDate);
 
   let startJob;
 
@@ -74,9 +102,7 @@ const createAutomationSchedule = (automation: Automations) => {
   });
 
   console.log(
-    `[${new Date()}][jobs]: scheduled for ${new Date(
-      automation.date
-    )} cron(${automationCron}) `,
+    `[${new Date()}][jobs]: scheduled for ${automationDate} cron(${automationCron}) `,
     jobs
   );
 };
@@ -88,8 +114,8 @@ export const watchAutomations = () => {
 
     if (jobs.date && jobs.date !== automation.date) {
       jobs.start?.stop();
-      jobs.food?.stop();
-      jobs.water?.stop();
+      jobs.food?.forEach((foodJob) => foodJob.stop());
+      jobs.water?.forEach((waterJob) => waterJob.stop());
       jobs.disinfectant?.stop();
       jobs = {};
     }

@@ -26,8 +26,8 @@ export type Automations = {
 
 export type AutomationJobs = {
   start?: ScheduledTask;
-  food?: ScheduledTask;
-  water?: ScheduledTask;
+  food?: ScheduledTask[];
+  water?: ScheduledTask[];
   disinfectant?: ScheduledTask;
   date?: number;
 };
