@@ -1,7 +1,7 @@
 import { schedule } from "node-cron";
 import { automationsRef, controlsRef } from "./database";
 import { onValue, update } from "firebase/database";
-import { dateToCron, hourListToCron, dayListToCron } from "./utils";
+import { dateToCron, hourListToCron, dayListToCron, tenSeconds } from "./utils";
 import { AutomationJobs, Automations, AutomationStatus } from "./types";
 
 let jobs: AutomationJobs = {};
@@ -22,7 +22,8 @@ const createControlsSchedule = (automation: Automations) => {
         update(controlsRef(), {
           food: false,
         });
-      }, 30 * 1000);
+        console.log(`[${new Date()}][jobs]: food finished`, jobs);
+      }, tenSeconds);
     })
   );
   const water = automation.water.map((waterHour) =>
@@ -42,7 +43,8 @@ const createControlsSchedule = (automation: Automations) => {
         update(controlsRef(), {
           water: false,
         });
-      }, 30 * 1000);
+        console.log(`[${new Date()}][jobs]: water finished`, jobs);
+      }, tenSeconds);
     })
   );
   const disinfectant = schedule(dayListToCron(automation.disinfectant), () => {
@@ -61,7 +63,8 @@ const createControlsSchedule = (automation: Automations) => {
       update(controlsRef(), {
         disinfectant: false,
       });
-    }, 30 * 1000);
+      console.log(`[${new Date()}][jobs]: disinfectant finished`, jobs);
+    }, tenSeconds);
   });
   jobs = {
     ...jobs,

@@ -19,3 +19,5 @@ export const dayListToCron = (dayList: boolean[]): string => {
     .join(",");
   return `0 12 * * ${days}`;
 };
+
+export const tenSeconds = 10 * 1000;
